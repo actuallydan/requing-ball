@@ -1,53 +1,108 @@
+import { useState } from "react";
+
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
+import { fastFetch } from "../lib/fastFetch";
+import SpringSpinner from '@bit/bondz.react-epic-spinners.spring-spinner';
+
+const defaultObj = `{
+  "method": "GET",
+  "url": "https://randomuser.me/api/?results=5",
+  "Headers": {
+      "Access-Allow-Origin": "*"
+  }
+}`;
 
 export default function Home() {
+  const [request, setRequest] = useState(defaultObj);
+  const [error, setError] = useState(null);
+  const [time, setTime] = useState(null);
+  const [result, setResult] = useState("Your result will appear here!");
+  const [loading, setLoading] = useState(false);
+
+  const changeText = (e) => {
+    setError(null);
+    setRequest(e.target.value);
+  }
+
+  const resetState = () => {
+    setTime(null);
+    setResult(null);
+    setError(null);
+  }
+
+  const sendRequest = async () => {
+    resetState();
+    setLoading(true);
+
+    try {
+      const obj = JSON.parse(request.trim());
+      if (!obj.url) {
+        throw 'Request must have a url property'
+      }
+
+      if (!obj.method) {
+        throw 'Request must specify a method (GET, POST, PUT, DELETE)'
+      }
+
+      let t0 = performance.now();
+      let res = await fastFetch(obj, 60000);
+      const time = performance.now() - t0;
+
+      setTime(time);
+      setResult(JSON.stringify(res, null, 2));
+
+    } catch (e) {
+      console.error(e);
+      if (e?.message.includes('Unexpected token')) {
+        setError(e.message + ". \nMake sure your request is valid JSON (use double-quotes!)");
+      } else {
+        setError(e.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const isFast = time && time < 100;
+
   return (
     <div className={styles.container}>
       <Head>
-        <title>Create Next App</title>
+        <title>Requing Ball</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+          Requing Ball Request Cache
         </h1>
 
         <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
+          Get started by entering a {' '}
+          <code className={styles.code}>fetch</code> request object.
         </p>
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+        <textarea className={styles.code + " " + styles.textarea} onChange={changeText} value={request}>
+        </textarea>
+        <button role="button" className={styles.button} onClick={sendRequest}>{
+          loading
+            ? <SpringSpinner
+              color='#FFFFFF'
+              size='25'
+            />
+            : "Go"
+        }
+        </button>
+        {error && <p className={styles.red}>{error}</p>}
 
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
+        {time && (<p className={styles.description}>
+          Results in {' '}
+          <code className={`${styles.code} ${isFast ? styles.green : styles.red}`}>{time}</code> ms{isFast ? "!" : "."}
+        </p>)}
+        <textarea contentEditable={false} className={styles.code + " " + styles.textarea} onChange={changeText} value={result}>
+        </textarea>
 
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
       </main>
 
       <footer className={styles.footer}>

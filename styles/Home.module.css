@@ -114,6 +114,36 @@
   height: 1em;
 }
 
+.textarea {
+  width: 100%;
+  min-height: 30vh;
+}
+
+.button {
+  margin: 1em;
+  width: fit-content;
+  min-width: 5em;
+  font-size: 1.5rem;
+  padding: 0.5em;
+  background: linear-gradient(-90deg, #ff49ce, #ae00c5);
+  border: none;
+  border-radius: 9999px;
+  color: #FFF;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.green{
+  color: green;
+}
+
+.red {
+  color: red;
+}
 @media (max-width: 600px) {
   .grid {
     width: 100%;
