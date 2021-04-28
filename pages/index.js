@@ -41,10 +41,6 @@ export default function Home() {
         throw 'Request must have a url property'
       }
 
-      if (!obj.method) {
-        throw 'Request must specify a method (GET, POST, PUT, DELETE)'
-      }
-
       let t0 = performance.now();
       let res = await fastFetch(obj, 60000);
       const time = performance.now() - t0;
